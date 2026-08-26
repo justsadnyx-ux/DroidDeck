@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">DroidDeck</string>
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_files">Files</string>
+    <string name="nav_apps">Apps</string>
+    <string name="nav_tools">Tools</string>
+    <string name="device">Device</string>
+    <string name="memory">Memory</string>
+    <string name="storage">Storage</string>
+    <string name="battery">Battery</string>
+    <string name="network">Network</string>
+    <string name="refresh">Refresh</string>
+    <string name="web_server">Web file server</string>
+    <string name="flashlight">Flashlight</string>
+    <string name="vibrate">Vibrate</string>
+    <string name="brightness">Screen brightness</string>
+    <string name="ping">Ping</string>
+    <string name="hash_tool">Text hashing</string>
+    <string name="quick_settings">Quick settings</string>
+    <string name="search_apps">Search apps…</string>
+    <string name="new_folder">New folder</string>
+    <string name="grant_notif">Allow notifications</string>
+</resources>

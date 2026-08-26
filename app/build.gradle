@@ -1,0 +1,47 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'ux.justsadnyx.droiddeck'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "ux.justsadnyx.droiddeck"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file('../droiddeck.keystore')
+            storePassword 'DroidDeck2026'
+            keyAlias 'droiddeck'
+            keyPassword 'DroidDeck2026'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+        debug {
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+}

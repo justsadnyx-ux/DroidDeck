@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/device"
+            android:textColor="@color/violet_light"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08"
+            android:textAllCaps="true" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/DeckCard">
+            <LinearLayout style="@style/DeckCardInner">
+                <TextView android:id="@+id/d_device" style="@style/DeckValue" />
+                <TextView android:id="@+id/d_android" style="@style/DeckMeta" />
+                <TextView android:id="@+id/d_cpu" style="@style/DeckMeta" />
+                <TextView android:id="@+id/d_screen" style="@style/DeckMeta" />
+                <TextView android:id="@+id/d_uptime" style="@style/DeckMeta" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="@string/memory"
+            android:textColor="@color/violet_light"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08"
+            android:textAllCaps="true" />
+
+        <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
+            <LinearLayout style="@style/DeckCardInner">
+                <TextView android:id="@+id/d_ram" style="@style/DeckValue" />
+                <ProgressBar
+                    android:id="@+id/d_ram_bar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:max="100"
+                    android:progressTint="@color/cyan" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="@string/storage"
+            android:textColor="@color/violet_light"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08"
+            android:textAllCaps="true" />
+
+        <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
+            <LinearLayout style="@style/DeckCardInner">
+                <TextView android:id="@+id/d_storage" style="@style/DeckValue" />
+                <ProgressBar
+                    android:id="@+id/d_storage_bar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:max="100"
+                    android:progressTint="@color/violet_light" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="@string/battery"
+            android:textColor="@color/violet_light"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08"
+            android:textAllCaps="true" />
+
+        <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
+            <LinearLayout style="@style/DeckCardInner">
+                <TextView android:id="@+id/d_battery" style="@style/DeckValue" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="@string/network"
+            android:textColor="@color/violet_light"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08"
+            android:textAllCaps="true" />
+
+        <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
+            <LinearLayout style="@style/DeckCardInner">
+                <TextView
+                    style="@style/DeckMeta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Local IPs" />
+                <TextView android:id="@+id/d_ip_local" style="@style/DeckValue" />
+                <TextView
+                    style="@style/DeckMeta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Public IP" />
+                <TextView android:id="@+id/d_ip_public" style="@style/DeckValue" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/d_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:text="@string/refresh" />
+
+    </LinearLayout>
+</ScrollView>

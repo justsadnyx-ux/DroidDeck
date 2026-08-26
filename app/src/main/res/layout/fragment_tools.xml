@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView style="@style/DeckToolLabel" android:text="@string/web_server" />
+
+        <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
+            <LinearLayout style="@style/DeckCardInner">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <TextView
+                        style="@style/DeckValue"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:text="@string/web_server" />
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/t_server_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+                <TextView
+                    android:id="@+id/t_server_status"
+                    style="@style/DeckMeta" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView style="@style/DeckToolLabel" android:text="Device controls" />
+
+        <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
+            <LinearLayout style="@style/DeckCardInner">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/t_flash"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:text="@string/flashlight" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/t_vibrate"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:layout_weight="1"
+                        android:text="@string/vibrate" />
+                </LinearLayout>
+
+                <TextView
+                    style="@style/DeckMeta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="@string/brightness" />
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/t_brightness"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:valueFrom="1"
+                    android:valueTo="255"
+                    android:stepSize="1"
+                    app:labelBehavior="gone" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/t_brightness_perm"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Grant brightness permission" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView style="@style/DeckToolLabel" android:text="@string/ping" />
+
+        <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
+            <LinearLayout style="@style/DeckCardInner">
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Host or IP (e.g. roblox.com, 1.1.1.1)">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/t_ping_host"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textUri"
+                        android:singleLine="true" />
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/t_ping"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/ping" />
+                <TextView
+                    android:id="@+id/t_ping_out"
+                    style="@style/DeckMeta"
+                    android:fontFamily="monospace"
+                    android:textIsSelectable="true" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView style="@style/DeckToolLabel" android:text="@string/hash_tool" />
+
+        <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
+            <LinearLayout style="@style/DeckCardInner">
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Text to hash">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/t_hash_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text" />
+                </com.google.android.material.textfield.TextInputLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/t_hash_md5"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:text="MD5" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/t_hash_sha"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:layout_weight="1"
+                        android:text="SHA-256" />
+                </LinearLayout>
+                <TextView
+                    android:id="@+id/t_hash_out"
+                    style="@style/DeckMeta"
+                    android:fontFamily="monospace"
+                    android:textIsSelectable="true" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView style="@style/DeckToolLabel" android:text="@string/quick_settings" />
+
+        <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
+            <LinearLayout style="@style/DeckCardInner">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/t_wifi"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:layout_weight="1"
+                        android:insetLeft="0dp"
+                        android:insetRight="0dp"
+                        android:text="Wi-Fi" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/t_bluetooth"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="4dp"
+                        android:layout_weight="1"
+                        android:insetLeft="0dp"
+                        android:insetRight="0dp"
+                        android:text="Bluetooth" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/t_display"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="4dp"
+                        android:layout_weight="1"
+                        android:insetLeft="0dp"
+                        android:insetRight="0dp"
+                        android:text="Display" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/t_battery"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:layout_weight="1"
+                        android:insetLeft="0dp"
+                        android:insetRight="0dp"
+                        android:text="Battery" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/t_apps"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="4dp"
+                        android:layout_weight="1"
+                        android:insetLeft="0dp"
+                        android:insetRight="0dp"
+                        android:text="Apps" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/t_notif_perm"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:layout_weight="1"
+                        android:insetLeft="0dp"
+                        android:insetRight="0dp"
+                        android:text="@string/grant_notif" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</ScrollView>
