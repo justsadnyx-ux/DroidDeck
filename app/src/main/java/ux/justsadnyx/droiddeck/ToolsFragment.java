@@ -1,6 +1,8 @@
 package ux.justsadnyx.droiddeck;
 
-import android.Manifest;
+import android.app.ActivityManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -52,6 +54,7 @@ public class ToolsFragment extends Fragment {
         serverStatus = v.findViewById(R.id.t_server_status);
         MaterialButton flashBtn = v.findViewById(R.id.t_flash);
         MaterialButton vibrateBtn = v.findViewById(R.id.t_vibrate);
+        MaterialButton sosBtn = v.findViewById(R.id.t_sos);
         Slider brightness = v.findViewById(R.id.t_brightness);
         MaterialButton brightnessPerm = v.findViewById(R.id.t_brightness_perm);
         EditText pingHost = v.findViewById(R.id.t_ping_host);
@@ -67,6 +70,9 @@ public class ToolsFragment extends Fragment {
         MaterialButton batteryBtn = v.findViewById(R.id.t_battery);
         MaterialButton appsBtn = v.findViewById(R.id.t_apps);
         MaterialButton notifPerm = v.findViewById(R.id.t_notif_perm);
+        MaterialButton clipBtn = v.findViewById(R.id.t_clip_clear);
+        MaterialButton shareBtn = v.findViewById(R.id.t_share_report);
+        MaterialButton vibrateLong = v.findViewById(R.id.t_vibrate_long);
 
         updateServerStatus();
         serverSwitch.setOnCheckedChangeListener((btn, checked) -> {
@@ -74,10 +80,10 @@ public class ToolsFragment extends Fragment {
             Intent intent = new Intent(ctx, HttpServerService.class);
             if (checked) {
                 if (Build.VERSION.SDK_INT >= 33 &&
-                        ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS)
+                        ContextCompat.checkSelfPermission(ctx, android.Manifest.permission.POST_NOTIFICATIONS)
                                 != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(requireActivity(),
-                            new String[]{Manifest.permission.POST_NOTIFICATIONS}, 42);
+                            new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 42);
                 }
                 ContextCompat.startForegroundService(ctx, intent);
             } else {
@@ -87,7 +93,9 @@ public class ToolsFragment extends Fragment {
         });
 
         flashBtn.setOnClickListener(btn -> toggleTorch());
-        vibrateBtn.setOnClickListener(btn -> vibrate());
+        vibrateBtn.setOnClickListener(btn -> vibrate(300));
+        vibrateLong.setOnClickListener(btn -> vibrate(2000));
+        sosBtn.setOnClickListener(btn -> sosPattern());
 
         int currentBrightness = Settings.System.getInt(requireContext().getContentResolver(),
                 Settings.System.SCREEN_BRIGHTNESS, 128);
@@ -127,13 +135,35 @@ public class ToolsFragment extends Fragment {
 
         notifPerm.setOnClickListener(btn -> {
             if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(requireContext(),
-                    Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                    android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(requireActivity(),
-                        new String[]{Manifest.permission.POST_NOTIFICATIONS}, 43);
+                        new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 43);
             } else {
                 Toast.makeText(requireContext(), "Notifications allowed", Toast.LENGTH_SHORT).show();
             }
         });
+
+        clipBtn.setOnClickListener(btn -> {
+            ClipboardManager cm = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+            if (cm != null) {
+                cm.setPrimaryClip(ClipData.newPlainText("", ""));
+                Toast.makeText(requireContext(), "Clipboard cleared", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        shareBtn.setOnClickListener(btn -> shareReport());
+    }
+
+    private void shareReport() {
+        try {
+            String report = Util.deviceReport(requireContext());
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(Intent.EXTRA_TEXT, report);
+            startActivity(Intent.createChooser(intent, "Share device report"));
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Share failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void openPanel(String panelAction, String fallback) {
@@ -193,7 +223,7 @@ public class ToolsFragment extends Fragment {
 
     private static boolean torchOn = false;
 
-    private void vibrate() {
+    private void vibrate(long ms) {
         Vibrator vibrator;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             VibratorManager vm = (VibratorManager) requireContext()
@@ -206,11 +236,34 @@ public class ToolsFragment extends Fragment {
             Toast.makeText(requireContext(), "No vibrator", Toast.LENGTH_SHORT).show();
             return;
         }
-        vibrator.vibrate(VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE));
+        vibrator.vibrate(VibrationEffect.createOneShot(ms, VibrationEffect.DEFAULT_AMPLITUDE));
+    }
+
+    private void sosPattern() {
+        Vibrator vibrator;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            VibratorManager vm = (VibratorManager) requireContext()
+                    .getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+            vibrator = vm.getDefaultVibrator();
+        } else {
+            vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
+        }
+        if (vibrator == null || !vibrator.hasVibrator()) {
+            Toast.makeText(requireContext(), "No vibrator", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        long[] pattern = {
+            0, 200, 100, 200, 100, 200,    // S: dot dot dot
+            200, 600, 100,                  // O: dash dash dash
+            600, 200, 100, 200, 100, 200,   // S: dot dot dot
+            200
+        };
+        vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1));
+        Toast.makeText(requireContext(), "SOS pattern", Toast.LENGTH_SHORT).show();
     }
 
     private void ping(final String host, final TextView output) {
-        output.setText("Pinging " + host + "…");
+        output.setText("Pinging " + host + "...");
         new Thread(() -> {
             StringBuilder sb = new StringBuilder();
             try {
@@ -230,6 +283,10 @@ public class ToolsFragment extends Fragment {
     }
 
     private void computeHash(String text, String algorithm, TextView output) {
+        if (text.isEmpty()) {
+            output.setText("Enter text first");
+            return;
+        }
         try {
             MessageDigest digest = MessageDigest.getInstance(algorithm);
             byte[] hashed = digest.digest(text.getBytes(StandardCharsets.UTF_8));

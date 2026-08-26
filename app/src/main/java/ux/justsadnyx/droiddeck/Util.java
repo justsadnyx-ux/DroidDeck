@@ -4,13 +4,13 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
-import android.os.SystemClock;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -89,6 +89,16 @@ public final class Util {
         return cores + " cores · " + abi + (hardware.isEmpty() ? "" : "\n" + hardware);
     }
 
+    public static int appCount(Context ctx) {
+        try {
+            PackageManager pm = ctx.getPackageManager();
+            List<android.content.pm.PackageInfo> packages = pm.getInstalledPackages(0);
+            return packages.size();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
     public static String localIpAddresses() {
         StringBuilder sb = new StringBuilder();
         try {
@@ -132,6 +142,7 @@ public final class Util {
             conn = (HttpURLConnection) new URL(url).openConnection();
             conn.setConnectTimeout(5000);
             conn.setReadTimeout(5000);
+            conn.setRequestProperty("User-Agent", "DroidDeck-Android");
             BufferedReader r = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder sb = new StringBuilder();
             String line;
@@ -153,5 +164,38 @@ public final class Util {
     public static boolean isDarkMode(Context ctx) {
         int mode = ctx.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
         return mode == Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    public static String deviceReport(Context ctx) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("== DroidDeck Device Report ==\n");
+        sb.append("Model: ").append(Build.MANUFACTURER).append(" ").append(Build.MODEL).append("\n");
+        sb.append("Android: ").append(Build.VERSION.RELEASE).append(" (API ").append(Build.VERSION.SDK_INT).append(")\n");
+        sb.append("Security patch: ").append(Build.VERSION.SECURITY_PATCH != null ? Build.VERSION.SECURITY_PATCH : "?").append("\n");
+        sb.append("CPU cores: ").append(Runtime.getRuntime().availableProcessors()).append("\n");
+        String abi = Build.SUPPORTED_ABIS != null && Build.SUPPORTED_ABIS.length > 0 ? Build.SUPPORTED_ABIS[0] : "?";
+        sb.append("ABI: ").append(abi).append("\n");
+        sb.append("Hardware: ").append(Build.HARDWARE != null ? Build.HARDWARE : "?").append("\n");
+
+        android.util.DisplayMetrics dm = ctx.getResources().getDisplayMetrics();
+        sb.append("Screen: ").append(dm.widthPixels).append("x").append(dm.heightPixels).append(" @ ").append(dm.densityDpi).append("dpi\n");
+
+        long tRam = totalRam(ctx);
+        long aRam = availRam(ctx);
+        sb.append("RAM: ").append(humanSize(tRam - aRam)).append(" / ").append(humanSize(tRam)).append("\n");
+
+        long totalSt = storageTotal();
+        long freeSt = storageFree();
+        sb.append("Storage: ").append(humanSize(totalSt - freeSt)).append(" / ").append(humanSize(totalSt)).append("\n");
+
+        int level = batteryLevel(ctx);
+        float temp = batteryTemp(ctx);
+        sb.append("Battery: ").append(level).append("% · ").append(temp).append("°C\n");
+
+        sb.append("Network: ").append(localIpAddresses()).append("\n");
+        sb.append("Wi-Fi: ").append(wifiSsid(ctx)).append("\n");
+        sb.append("Apps installed: ").append(appCount(ctx)).append("\n");
+
+        return sb.toString();
     }
 }

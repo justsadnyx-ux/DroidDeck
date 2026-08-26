@@ -60,6 +60,28 @@
                         android:layout_weight="1"
                         android:text="@string/vibrate" />
                 </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/t_vibrate_long"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:text="Long vibrate" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/t_sos"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:layout_weight="1"
+                        android:text="SOS pattern" />
+                </LinearLayout>
 
                 <TextView
                     style="@style/DeckMeta"
@@ -81,6 +103,26 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Grant brightness permission" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView style="@style/DeckToolLabel" android:text="Quick actions" />
+
+        <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
+            <LinearLayout style="@style/DeckCardInner">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/t_clip_clear"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Clear clipboard" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/t_share_report"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Share device report" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

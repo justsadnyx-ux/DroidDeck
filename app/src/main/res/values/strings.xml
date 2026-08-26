@@ -4,6 +4,7 @@
     <string name="nav_files">Files</string>
     <string name="nav_apps">Apps</string>
     <string name="nav_tools">Tools</string>
+    <string name="nav_updates">Update</string>
     <string name="device">Device</string>
     <string name="memory">Memory</string>
     <string name="storage">Storage</string>

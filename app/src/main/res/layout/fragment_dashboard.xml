@@ -11,37 +11,24 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/device"
-            android:textColor="@color/violet_light"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.08"
-            android:textAllCaps="true" />
+        <TextView style="@style/DeckToolLabel" android:text="@string/device" />
 
-        <com.google.android.material.card.MaterialCardView
-            style="@style/DeckCard">
+        <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
             <LinearLayout style="@style/DeckCardInner">
                 <TextView android:id="@+id/d_device" style="@style/DeckValue" />
                 <TextView android:id="@+id/d_android" style="@style/DeckMeta" />
                 <TextView android:id="@+id/d_cpu" style="@style/DeckMeta" />
                 <TextView android:id="@+id/d_screen" style="@style/DeckMeta" />
                 <TextView android:id="@+id/d_uptime" style="@style/DeckMeta" />
+                <TextView
+                    style="@style/DeckMeta"
+                    android:layout_marginTop="8dp"
+                    android:text="Installed apps" />
+                <TextView android:id="@+id/d_app_count" style="@style/DeckValue" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/memory"
-            android:textColor="@color/violet_light"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.08"
-            android:textAllCaps="true" />
+        <TextView style="@style/DeckToolLabel" android:text="@string/memory" />
 
         <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
             <LinearLayout style="@style/DeckCardInner">
@@ -57,16 +44,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/storage"
-            android:textColor="@color/violet_light"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.08"
-            android:textAllCaps="true" />
+        <TextView style="@style/DeckToolLabel" android:text="@string/storage" />
 
         <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
             <LinearLayout style="@style/DeckCardInner">
@@ -82,33 +60,20 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/battery"
-            android:textColor="@color/violet_light"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.08"
-            android:textAllCaps="true" />
+        <TextView style="@style/DeckToolLabel" android:text="@string/battery" />
 
         <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
             <LinearLayout style="@style/DeckCardInner">
                 <TextView android:id="@+id/d_battery" style="@style/DeckValue" />
+                <TextView
+                    style="@style/DeckMeta"
+                    android:layout_marginTop="8dp"
+                    android:text="Health" />
+                <TextView android:id="@+id/d_battery_health" style="@style/DeckValue" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/network"
-            android:textColor="@color/violet_light"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.08"
-            android:textAllCaps="true" />
+        <TextView style="@style/DeckToolLabel" android:text="@string/network" />
 
         <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
             <LinearLayout style="@style/DeckCardInner">
@@ -125,6 +90,13 @@
                     android:layout_marginTop="10dp"
                     android:text="Public IP" />
                 <TextView android:id="@+id/d_ip_public" style="@style/DeckValue" />
+                <TextView
+                    style="@style/DeckMeta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Wi-Fi SSID" />
+                <TextView android:id="@+id/d_wifi_ssid" style="@style/DeckValue" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -134,6 +106,14 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="22dp"
             android:text="@string/refresh" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/d_copy_report"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Copy device report" />
 
     </LinearLayout>
 </ScrollView>
