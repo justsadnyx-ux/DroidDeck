@@ -15,6 +15,10 @@ import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 public class UpdateChecker {
@@ -25,16 +29,8 @@ public class UpdateChecker {
 
     public static void schedule(Context ctx) {
         PeriodicWorkRequest work = new PeriodicWorkRequest.Builder(
-                CheckWorker.class, 6, TimeUnit.HOURS)
-                .setInitialDelay(1, TimeUnit.HOURS)
-                .build();
-        WorkManager.getInstance(ctx).enqueueUniquePeriodicWork(
-                WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, work);
-    }
-
-    public static void checkNow(Context ctx) {
-        PeriodicWorkRequest work = new PeriodicWorkRequest.Builder(
-                CheckWorker.class, 6, TimeUnit.HOURS)
+                CheckWorker.class, 1, TimeUnit.HOURS)
+                .setInitialDelay(30, TimeUnit.MINUTES)
                 .build();
         WorkManager.getInstance(ctx).enqueueUniquePeriodicWork(
                 WORK_NAME, ExistingPeriodicWorkPolicy.UPDATE, work);
@@ -79,13 +75,12 @@ public class UpdateChecker {
         @Override
         public Result doWork() {
             try {
-                String json = Util.fetchUrl("https://api.github.com/repos/justsadnyx-ux/DroidDeck/releases/latest");
+                String json = fetchUrl("https://api.github.com/repos/justsadnyx-ux/DroidDeck/releases/latest");
                 if (json == null) return Result.retry();
 
-                String tagName = extractTag(json);
-                if (tagName == null) return Result.retry();
+                String latestVersion = parseTag(json);
+                if (latestVersion == null) return Result.retry();
 
-                String latestVersion = tagName.replaceFirst("^v", "");
                 String currentVersion = getApplicationContext().getPackageManager()
                         .getPackageInfo(getApplicationContext().getPackageName(), 0).versionName;
 
@@ -93,21 +88,21 @@ public class UpdateChecker {
                     notifyUpdateAvailable(getApplicationContext(), latestVersion);
                 }
 
-                Prefs.setLastUpdateCheck(getApplicationContext(), System.currentTimeMillis());
                 return Result.success();
             } catch (Exception e) {
                 return Result.retry();
             }
         }
 
-        private String extractTag(String json) {
+        private String parseTag(String json) {
             int idx = json.indexOf("\"tag_name\"");
             if (idx < 0) return null;
-            int colon = json.indexOf(':', idx + 11);
-            int start = json.indexOf('"', colon + 1);
-            int end = json.indexOf('"', start + 1);
-            if (start < 0 || end < 0) return null;
-            return json.substring(start + 1, end);
+            int q1 = json.indexOf('"', idx + 12);
+            if (q1 < 0) return null;
+            int q2 = json.indexOf('"', q1 + 1);
+            if (q2 < 0) return null;
+            String tag = json.substring(q1 + 1, q2);
+            return tag.replaceFirst("^v", "");
         }
 
         private boolean isNewer(String a, String b) {
@@ -124,6 +119,24 @@ public class UpdateChecker {
                 return false;
             } catch (Exception e) {
                 return false;
+            }
+        }
+
+        private String fetchUrl(String urlStr) {
+            try {
+                HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(10000);
+                conn.setRequestProperty("User-Agent", "DroidDeck-Android/1.0");
+                BufferedReader r = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = r.readLine()) != null) sb.append(line);
+                r.close();
+                conn.disconnect();
+                return sb.toString();
+            } catch (Exception e) {
+                return null;
             }
         }
     }

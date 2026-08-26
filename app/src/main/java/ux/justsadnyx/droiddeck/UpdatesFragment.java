@@ -67,7 +67,7 @@ public class UpdatesFragment extends Fragment {
         MaterialButton termsBtn = v.findViewById(R.id.u_terms);
         MaterialButton licenseBtn = v.findViewById(R.id.u_license);
 
-        checkBtn.setOnClickListener(btn -> checkForUpdate(false));
+        checkBtn.setOnClickListener(btn -> checkForUpdate());
         releasesBtn.setOnClickListener(btn -> {
             try {
                 startActivity(new Intent(Intent.ACTION_VIEW,
@@ -105,28 +105,35 @@ public class UpdatesFragment extends Fragment {
     private void showTerms() {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Terms of Service")
-                .setMessage("DroidDeck — Terms of Service\n\n" +
-                        "Last updated: August 2026\n\n" +
+                .setMessage("DroidDeck \u2014 Terms of Service\n\n" +
+                        "Last updated: August 2026\nVersion: 1.0\n\n" +
                         "1. ACCEPTANCE OF TERMS\n" +
-                        "By using DroidDeck, you agree to these terms. If you do not agree, do not use the app.\n\n" +
+                        "By downloading, installing, or using DroidDeck (\u201cthe App\u201d), you agree to be bound by these Terms of Service. If you do not agree, do not use the App.\n\n" +
                         "2. DESCRIPTION OF SERVICE\n" +
-                        "DroidDeck is a free, open-source Android toolkit. It provides device monitoring, file management, app management, network utilities, and system controls.\n\n" +
+                        "DroidDeck is a free, open-source Android toolkit that provides device monitoring, file management, app management, network utilities, and system controls. The App runs entirely on your device.\n\n" +
                         "3. USE AT YOUR OWN RISK\n" +
-                        "DroidDeck is provided \"as is\" without warranty. You are responsible for your use of the app. The developers are not liable for any damage, data loss, or security issues.\n\n" +
+                        "The App is provided \u201cas is\u201d without warranty of any kind. You are solely responsible for your use of the App, including any modifications it makes to system settings (brightness, etc.) or actions it performs (app disable, uninstall, etc.). The developers are not liable for any damage, data loss, or security issues.\n\n" +
                         "4. PERMISSIONS\n" +
-                        "DroidDeck requests permissions to provide its features (storage access, camera for torch, notifications, etc.). We do not collect, transmit, or store any personal data.\n\n" +
-                        "5. OPEN SOURCE\n" +
-                        "DroidDeck is open source software. You may view, modify, and distribute the source code under the MIT License.\n\n" +
-                        "6. UPDATES\n" +
-                        "DroidDeck may check for updates via GitHub. No personal information is sent during this process.\n\n" +
-                        "7. THIRD-PARTY SERVICES\n" +
-                        "DroidDeck uses GitHub (api.github.com, github.com) for update checking and distribution. Their terms apply when you interact with their services.\n\n" +
+                        "The App requests permissions to provide its features:\n" +
+                        "\u2022 Storage: file browsing and sharing\n" +
+                        "\u2022 Camera: flashlight control\n" +
+                        "\u2022 Notifications: update alerts and server status\n" +
+                        "\u2022 Network: IP lookup, ping, DNS, web server\n" +
+                        "\u2022 Write Settings: brightness control\n" +
+                        "\u2022 Install packages: self-update and terms APK install\n\n" +
+                        "No personal data is collected, transmitted, or stored by the App.\n\n" +
+                        "5. AUTO-UPDATE CHECKS\n" +
+                        "The App periodically checks GitHub for new versions. Only the App version number is compared \u2014 no personal information is transmitted.\n\n" +
+                        "6. WEB FILE SERVER\n" +
+                        "The optional web file server feature shares your device storage over the local network. Use it only on trusted networks. The developers are not responsible for unauthorized access.\n\n" +
+                        "7. OPEN SOURCE\n" +
+                        "DroidDeck is released under the MIT License. Source code is available on GitHub.\n\n" +
                         "8. TERMINATION\n" +
-                        "You may stop using DroidDeck at any time. Uninstalling the app removes all local data.\n\n" +
-                        "9. CHANGES TO TERMS\n" +
-                        "These terms may be updated. Continued use constitutes acceptance of any changes.\n\n" +
+                        "You may stop using the App at any time by uninstalling it. All local data will be removed.\n\n" +
+                        "9. CHANGES\n" +
+                        "These terms may be updated. Continued use constitutes acceptance of changes.\n\n" +
                         "10. CONTACT\n" +
-                        "Report issues at https://github.com/justsadnyx-ux/DroidDeck/issues")
+                        "https://github.com/justsadnyx-ux/DroidDeck/issues")
                 .setPositiveButton("OK", null)
                 .show();
     }
@@ -134,7 +141,7 @@ public class UpdatesFragment extends Fragment {
     private void showLicense() {
         new AlertDialog.Builder(requireContext())
                 .setTitle("MIT License")
-                .setMessage("MIT License\n\nCopyright (c) 2026 justsadnyx\n\n" +
+                .setMessage("Copyright (c) 2026 justsadnyx\n\n" +
                         "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\n" +
                         "The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\n" +
                         "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.")
@@ -142,18 +149,19 @@ public class UpdatesFragment extends Fragment {
                 .show();
     }
 
-    private void checkForUpdate(boolean silent) {
+    private void checkForUpdate() {
         checkBtn.setEnabled(false);
         status.setText("Checking for updates...");
+        dlBar.setVisibility(View.GONE);
 
         exec.execute(() -> {
             try {
                 String json = fetchUrl("https://api.github.com/repos/justsadnyx-ux/DroidDeck/releases/latest");
-                if (json == null) throw new Exception("Network error");
+                if (json == null) throw new Exception("Network error \u2014 check your connection");
 
-                String tagName = extractJsonString(json, "tag_name");
-                String version = tagName != null ? tagName.replaceFirst("^v", "") : null;
-                if (version == null) throw new Exception("No version found");
+                String tagName = extractBetween(json, "\"tag_name\":\"", "\"");
+                if (tagName == null) throw new Exception("Could not parse release data");
+                String latestVersion = tagName.replaceFirst("^v", "");
 
                 String currentVersion = "?";
                 try {
@@ -161,19 +169,30 @@ public class UpdatesFragment extends Fragment {
                             .getPackageInfo(requireContext().getPackageName(), 0).versionName;
                 } catch (Exception ignored) {}
 
-                if (isSameOrNewer(version, currentVersion)) {
+                if (isNewer(latestVersion, currentVersion)) {
+                    String apkUrl = findApkUrl(json);
+                    String finalCurrentVersion = currentVersion;
+                    if (apkUrl == null) {
+                        main.post(() -> {
+                            status.setText("v" + latestVersion + " available (current: v" + finalCurrentVersion + ")\nNo downloadable APK found.");
+                            checkBtn.setEnabled(true);
+                        });
+                        return;
+                    }
+                    String fv = latestVersion;
+                    main.post(() -> {
+                        status.setText("v" + fv + " available \u2014 downloading...");
+                        dlBar.setVisibility(View.VISIBLE);
+                        dlBar.setProgress(0);
+                    });
+                    downloadApk(apkUrl, latestVersion);
+                } else {
                     String cv = currentVersion;
                     main.post(() -> {
-                        status.setText("Up to date (v" + cv + ")");
+                        status.setText("Up to date \u2014 v" + cv + " is the latest version.");
                         checkBtn.setEnabled(true);
                     });
-                    return;
                 }
-
-                String apkUrl = findApkUrl(json);
-                if (apkUrl == null) throw new Exception("Release has no APK");
-                downloadAndInstall(apkUrl, version);
-
             } catch (Exception e) {
                 main.post(() -> {
                     status.setText("Update check failed: " + e.getMessage());
@@ -183,13 +202,7 @@ public class UpdatesFragment extends Fragment {
         });
     }
 
-    private void downloadAndInstall(String urlStr, String version) {
-        main.post(() -> {
-            status.setText("Downloading v" + version + "...");
-            dlBar.setVisibility(View.VISIBLE);
-            dlBar.setProgress(0);
-        });
-
+    private void downloadApk(String urlStr, String version) {
         try {
             File cacheDir = new File(requireContext().getCacheDir(), "updates");
             cacheDir.mkdirs();
@@ -198,7 +211,8 @@ public class UpdatesFragment extends Fragment {
 
             HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
             conn.setConnectTimeout(15000);
-            conn.setReadTimeout(30000);
+            conn.setReadTimeout(60000);
+            conn.setRequestProperty("User-Agent", "DroidDeck-Android/1.0");
             conn.connect();
 
             if (conn.getResponseCode() != 200) throw new Exception("HTTP " + conn.getResponseCode());
@@ -222,20 +236,22 @@ public class UpdatesFragment extends Fragment {
             in.close();
             conn.disconnect();
 
+            String fv = version;
             main.post(() -> {
-                status.setText("Downloaded. Installing...");
+                status.setText("Downloaded v" + fv + ". Tap to install.");
                 dlBar.setVisibility(View.GONE);
 
                 if (!requireContext().getPackageManager().canRequestPackageInstalls()) {
                     pendingApkPath = apkFile.getAbsolutePath();
                     Toast.makeText(requireContext(), "Allow installs from this source first.", Toast.LENGTH_LONG).show();
-                    startActivity(new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                            Uri.parse("package:" + requireContext().getPackageName())));
+                    try {
+                        startActivity(new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                                Uri.parse("package:" + requireContext().getPackageName())));
+                    } catch (Exception ignored) {}
                     return;
                 }
                 promptInstall(apkFile.getAbsolutePath());
             });
-
         } catch (Exception e) {
             main.post(() -> {
                 status.setText("Download failed: " + e.getMessage());
@@ -263,7 +279,7 @@ public class UpdatesFragment extends Fragment {
             HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
             conn.setConnectTimeout(10000);
             conn.setReadTimeout(10000);
-            conn.setRequestProperty("User-Agent", "DroidDeck-Android");
+            conn.setRequestProperty("User-Agent", "DroidDeck-Android/1.0");
             BufferedReader r = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder sb = new StringBuilder();
             String line;
@@ -276,37 +292,34 @@ public class UpdatesFragment extends Fragment {
         }
     }
 
-    private String extractJsonString(String json, String key) {
-        String search = "\"" + key + "\"";
-        int idx = json.indexOf(search);
-        if (idx < 0) return null;
-        int colon = json.indexOf(':', idx + search.length());
-        if (colon < 0) return null;
-        int start = json.indexOf('"', colon + 1);
-        if (start < 0) return null;
-        int end = json.indexOf('"', start + 1);
-        if (end < 0) return null;
-        return json.substring(start + 1, end);
+    private String extractBetween(String json, String start, String end) {
+        int i = json.indexOf(start);
+        if (i < 0) return null;
+        i += start.length();
+        int j = json.indexOf(end, i);
+        if (j < 0) return null;
+        return json.substring(i, j);
     }
 
     private String findApkUrl(String json) {
-        int idx = 0;
+        int searchFrom = 0;
         while (true) {
-            int nameIdx = json.indexOf("\"name\"", idx);
+            int nameIdx = json.indexOf("\"name\"", searchFrom);
             if (nameIdx < 0) break;
-            String name = extractJsonString(json.substring(nameIdx), "name");
+            String name = extractBetween(json.substring(nameIdx), "\"", "\"");
             if (name != null && name.endsWith(".apk")) {
                 int dlIdx = json.indexOf("\"browser_download_url\"", nameIdx);
                 if (dlIdx >= 0) {
-                    return extractJsonString(json.substring(dlIdx), "browser_download_url");
+                    String url = extractBetween(json.substring(dlIdx), "\"browser_download_url\":\"", "\"");
+                    if (url != null) return url;
                 }
             }
-            idx = nameIdx + 10;
+            searchFrom = nameIdx + 6;
         }
         return null;
     }
 
-    private boolean isSameOrNewer(String a, String b) {
+    private boolean isNewer(String a, String b) {
         try {
             String[] aa = a.split("\\.");
             String[] bb = b.split("\\.");
@@ -317,7 +330,7 @@ public class UpdatesFragment extends Fragment {
                 if (ai > bi) return true;
                 if (ai < bi) return false;
             }
-            return true;
+            return false;
         } catch (Exception e) {
             return false;
         }

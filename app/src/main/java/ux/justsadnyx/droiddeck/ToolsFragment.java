@@ -6,6 +6,11 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.os.VibratorManager;
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,22 +38,24 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
-import android.os.VibratorManager;
 
 public class ToolsFragment extends Fragment {
 
     private TextView serverStatus;
     private static boolean torchOn = false;
+    private final ExecutorService exec = Executors.newSingleThreadExecutor();
+    private final Handler main = new Handler(Looper.getMainLooper());
 
     @Nullable
     @Override
@@ -83,6 +90,9 @@ public class ToolsFragment extends Fragment {
         MaterialButton clipBtn = v.findViewById(R.id.t_clip_clear);
         MaterialButton shareBtn = v.findViewById(R.id.t_share_report);
         MaterialButton termsBtn = v.findViewById(R.id.t_open_terms);
+        EditText dnsHost = v.findViewById(R.id.t_dns_host);
+        MaterialButton dnsBtn = v.findViewById(R.id.t_dns_lookup);
+        TextView dnsOut = v.findViewById(R.id.t_dns_out);
 
         updateServerStatus();
         serverSwitch.setOnCheckedChangeListener((btn, checked) -> {
@@ -161,56 +171,88 @@ public class ToolsFragment extends Fragment {
         });
 
         shareBtn.setOnClickListener(btn -> shareReport());
-
         termsBtn.setOnClickListener(btn -> openTermsApp());
+
+        dnsBtn.setOnClickListener(btn -> {
+            String host = dnsHost.getText().toString().trim();
+            if (host.isEmpty()) host = "google.com";
+            dnsLookup(host, dnsOut);
+        });
     }
 
     private void openTermsApp() {
         String termsPkg = "ux.justsadnyx.droiddeck.terms";
+
         try {
-            Intent intent = requireContext().getPackageManager().getLaunchIntentForPackage(termsPkg);
-            if (intent != null) {
-                startActivity(intent);
+            Intent launchIntent = requireContext().getPackageManager().getLaunchIntentForPackage(termsPkg);
+            if (launchIntent != null) {
+                startActivity(launchIntent);
                 return;
             }
         } catch (Exception ignored) {}
 
-        new Thread(() -> {
+        Toast.makeText(requireContext(), "Installing Terms app...", Toast.LENGTH_SHORT).show();
+        exec.execute(() -> {
             try {
                 InputStream in = requireContext().getAssets().open("droiddeck-terms.apk");
-                File cacheDir = new File(requireContext().getCacheDir(), "terms_install");
-                cacheDir.mkdirs();
-                File apkFile = new File(cacheDir, "DroidDeckTerms.apk");
+                File cacheDir = new File(requireContext().getCacheDir(), "apks");
+                if (!cacheDir.exists()) cacheDir.mkdirs();
+                File apkFile = new File(cacheDir, "droiddeck-terms.apk");
                 OutputStream out = new FileOutputStream(apkFile);
-                byte[] buf = new byte[65536];
+                byte[] buf = new byte[8192];
                 int n;
                 while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
                 out.close();
                 in.close();
 
-                Intent intent;
+                Uri uri;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    Uri uri = FileProvider.getUriForFile(requireContext(),
+                    uri = FileProvider.getUriForFile(requireContext(),
                             requireContext().getPackageName() + ".fileprovider", apkFile);
-                    intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setDataAndType(uri, "application/vnd.android.package-archive");
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 } else {
-                    intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setDataAndType(Uri.fromFile(apkFile),
-                            "application/vnd.android.package-archive");
+                    uri = Uri.fromFile(apkFile);
                 }
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
-                    Toast.makeText(requireContext(), "Installing DroidDeck Terms...", Toast.LENGTH_SHORT).show();
-                    startActivity(intent);
+
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(uri, "application/vnd.android.package-archive");
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                main.post(() -> {
+                    try {
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        Toast.makeText(requireContext(),
+                                "Install failed. Go to Settings > Security > Unknown apps and allow this app.",
+                                Toast.LENGTH_LONG).show();
+                        try {
+                            startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                                    Uri.parse("package:" + requireContext().getPackageName())));
+                        } catch (Exception ignored2) {}
+                    }
                 });
             } catch (Exception e) {
-                new android.os.Handler(android.os.Looper.getMainLooper()).post(() ->
-                    Toast.makeText(requireContext(), "Could not install terms app: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show());
+                main.post(() -> Toast.makeText(requireContext(),
+                        "Could not extract terms APK: " + e.getMessage(), Toast.LENGTH_LONG).show());
             }
-        }).start();
+        });
+    }
+
+    private void dnsLookup(String host, TextView output) {
+        output.setText("Looking up " + host + "...");
+        exec.execute(() -> {
+            StringBuilder sb = new StringBuilder();
+            try {
+                InetAddress[] addrs = InetAddress.getAllByName(host);
+                for (InetAddress a : addrs) {
+                    sb.append(a.getHostAddress()).append("\n");
+                }
+                if (addrs.length == 0) sb.append("No results");
+            } catch (Exception e) {
+                sb.append("Lookup failed: ").append(e.getMessage());
+            }
+            String result = sb.toString().trim();
+            main.post(() -> output.setText(result));
+        });
     }
 
     private void shareReport() {
@@ -310,7 +352,7 @@ public class ToolsFragment extends Fragment {
 
     private void ping(final String host, final TextView output) {
         output.setText("Pinging " + host + "...");
-        new Thread(() -> {
+        exec.execute(() -> {
             StringBuilder sb = new StringBuilder();
             try {
                 Process process = Runtime.getRuntime().exec(new String[]{"ping", "-c", "4", "-W", "2", host});
@@ -324,8 +366,8 @@ public class ToolsFragment extends Fragment {
                 sb.append("ping failed: ").append(e.getMessage());
             }
             String result = sb.length() == 0 ? "No response" : sb.toString().trim();
-            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> output.setText(result));
-        }).start();
+            main.post(() -> output.setText(result));
+        });
     }
 
     private void computeHash(String text, String algorithm, TextView output) {

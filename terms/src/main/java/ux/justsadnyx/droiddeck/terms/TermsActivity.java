@@ -28,32 +28,75 @@ public class TermsActivity extends AppCompatActivity {
     }
 
     private String getTermsText() {
-        return "DroidDeck — Terms of Service & License\n\n" +
-                "Last updated: August 2026\n\n" +
-                "═══════════════════════════════════════\n" +
-                "TERMS OF SERVICE\n" +
-                "═══════════════════════════════════════\n\n" +
-                "1. ACCEPTANCE\n" +
-                "By using DroidDeck, you agree to these terms. If you do not agree, do not use the app.\n\n" +
-                "2. DESCRIPTION\n" +
-                "DroidDeck is a free, open-source Android toolkit providing device monitoring, file management, app management, network utilities, and system controls.\n\n" +
-                "3. USE AT YOUR OWN RISK\n" +
-                "DroidDeck is provided \"as is\" without warranty. The developers are not liable for any damage, data loss, or security issues arising from use of this app.\n\n" +
-                "4. PERMISSIONS\n" +
-                "DroidDeck requests permissions to provide its features. We do not collect, transmit, or store any personal data.\n\n" +
-                "5. UPDATES\n" +
-                "DroidDeck may check for updates via GitHub. No personal information is sent during this process.\n\n" +
-                "6. THIRD-PARTY SERVICES\n" +
-                "DroidDeck uses GitHub for update checking and distribution. Their terms apply.\n\n" +
-                "═══════════════════════════════════════\n" +
-                "MIT LICENSE\n" +
-                "═══════════════════════════════════════\n\n" +
-                "Copyright (c) 2026 justsadnyx\n\n" +
-                "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\n" +
-                "The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\n" +
-                "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\n" +
-                "═══════════════════════════════════════\n" +
-                "Source: github.com/justsadnyx-ux/DroidDeck\n" +
-                "═══════════════════════════════════════";
+        StringBuilder sb = new StringBuilder();
+        sb.append("DroidDeck \u2014 Terms of Service & License\n\n");
+        sb.append("Last updated: August 2026\nVersion: 1.0\n\n");
+        sb.append(divider()).append("\n");
+        sb.append("TERMS OF SERVICE\n");
+        sb.append(divider()).append("\n\n");
+
+        sb.append("1. ACCEPTANCE OF TERMS\n\n");
+        sb.append("By downloading, installing, or using DroidDeck (the \"App\"), you agree to be bound by these Terms of Service. If you do not agree, do not use the App.\n\n");
+
+        sb.append("2. DESCRIPTION OF SERVICE\n\n");
+        sb.append("DroidDeck is a free, open-source Android toolkit providing device monitoring, file management, app management, network utilities, and system controls. The App runs entirely on your device and does not connect to any external servers except for optional update checks.\n\n");
+
+        sb.append("3. USE AT YOUR OWN RISK\n\n");
+        sb.append("The App is provided \"as is\" without warranty of any kind, express or implied. You are solely responsible for your use of the App, including any modifications it makes to system settings (such as screen brightness), actions it performs (such as app disable, uninstall, or force stop), and data it accesses on your device. The developers are not liable for any damage, data loss, or security issues arising from use of the App.\n\n");
+
+        sb.append("4. PERMISSIONS\n\n");
+        sb.append("The App requests the following permissions:\n\n");
+        sb.append("  \u2022 Storage access: File browsing, management, and sharing.\n");
+        sb.append("  \u2022 Camera: Flashlight/torch control.\n");
+        sb.append("  \u2022 Notifications: Update alerts and web server status.\n");
+        sb.append("  \u2022 Network access: IP lookup, ping, DNS, web file server, update checks.\n");
+        sb.append("  \u2022 Write Settings: Screen brightness control.\n");
+        sb.append("  \u2022 Install packages: Self-update and terms APK install.\n");
+        sb.append("  \u2022 Foreground service: Background web file server.\n");
+        sb.append("  \u2022 Vibrate: Vibration alerts and SOS pattern.\n\n");
+        sb.append("No personal data is collected, transmitted, or stored by the App. All data remains on your device.\n\n");
+
+        sb.append("5. AUTO-UPDATE CHECKS\n\n");
+        sb.append("The App periodically checks GitHub (api.github.com) for new versions. During this check, only the App's current version number is sent. No personal information, device identifiers, or usage data is transmitted. You may disable automatic update checks in the Update tab.\n\n");
+
+        sb.append("6. WEB FILE SERVER\n\n");
+        sb.append("The App includes an optional web file server that shares your device storage over the local network. When enabled, any device on the same Wi-Fi network can browse and download files. Use this only on trusted, private networks.\n\n");
+
+        sb.append("7. OPEN SOURCE\n\n");
+        sb.append("DroidDeck is released under the MIT License. Source code is available at https://github.com/justsadnyx-ux/DroidDeck.\n\n");
+
+        sb.append("8. DATA COLLECTION\n\n");
+        sb.append("DroidDeck does NOT:\n");
+        sb.append("  \u2022 Collect any personal data\n");
+        sb.append("  \u2022 Transmit data to third-party servers (except GitHub for updates)\n");
+        sb.append("  \u2022 Use analytics or tracking\n");
+        sb.append("  \u2022 Display advertisements\n");
+        sb.append("  \u2022 Require account creation or login\n\n");
+
+        sb.append("9. TERMINATION\n\n");
+        sb.append("You may stop using the App at any time by uninstalling it. All locally stored data will be removed.\n\n");
+
+        sb.append("10. LIMITATION OF LIABILITY\n\n");
+        sb.append("In no event shall the developers be held liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of the App.\n\n");
+
+        sb.append("11. CONTACT\n\n");
+        sb.append("For questions or issues: https://github.com/justsadnyx-ux/DroidDeck/issues\n\n\n");
+
+        sb.append(divider()).append("\n");
+        sb.append("MIT LICENSE\n");
+        sb.append(divider()).append("\n\n");
+
+        sb.append("Copyright (c) 2026 justsadnyx\n\n");
+        sb.append("Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\n");
+        sb.append("The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\n");
+        sb.append("THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\n");
+        sb.append(divider()).append("\n");
+        sb.append("Source: github.com/justsadnyx-ux/DroidDeck\n");
+        sb.append(divider());
+        return sb.toString();
+    }
+
+    private String divider() {
+        return "═══════════════════════════════════════";
     }
 }

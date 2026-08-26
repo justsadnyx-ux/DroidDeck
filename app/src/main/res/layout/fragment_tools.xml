@@ -163,6 +163,36 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <TextView style="@style/DeckToolLabel" android:text="DNS Lookup" />
+
+        <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
+            <LinearLayout style="@style/DeckCardInner">
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Hostname (e.g. google.com)">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/t_dns_host"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textUri"
+                        android:singleLine="true" />
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/t_dns_lookup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Lookup" />
+                <TextView
+                    android:id="@+id/t_dns_out"
+                    style="@style/DeckMeta"
+                    android:fontFamily="monospace"
+                    android:textIsSelectable="true" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <TextView style="@style/DeckToolLabel" android:text="@string/hash_tool" />
 
         <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
