@@ -1,5 +1,6 @@
 package ux.justsadnyx.droiddeck;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,7 +23,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (!Prefs.isOnboardingDone(this)) {
+            startActivity(new Intent(this, WelcomeActivity.class));
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_main);
+
+        UpdateChecker.schedule(this);
 
         fm = getSupportFragmentManager();
 
@@ -58,6 +68,23 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             nav.setSelectedItemId(R.id.nav_dashboard);
+        }
+
+        handleIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent != null && intent.getBooleanExtra("open_updates", false)) {
+            BottomNavigationView nav = findViewById(R.id.bottom_nav);
+            if (nav != null) {
+                nav.setSelectedItemId(R.id.nav_updates);
+            }
         }
     }
 }

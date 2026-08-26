@@ -2,6 +2,7 @@ package ux.justsadnyx.droiddeck;
 
 import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -10,13 +11,14 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,6 +29,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.materialswitch.MaterialSwitch;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,6 +50,7 @@ public class AppsFragment extends Fragment {
 
     private AppAdapter adapter;
     private List<AppEntry> allApps = new ArrayList<>();
+    private final Handler main = new Handler(Looper.getMainLooper());
 
     @Nullable
     @Override
@@ -74,7 +80,8 @@ public class AppsFragment extends Fragment {
 
     private void loadApps() {
         PackageManager pm = requireContext().getPackageManager();
-        List<PackageInfo> packages = pm.getInstalledPackages(0);
+        List<PackageInfo> packages = pm.getInstalledPackages(
+                PackageManager.GET_ACTIVITIES | PackageManager.GET_SERVICES);
         allApps.clear();
         for (PackageInfo pi : packages) {
             ApplicationInfo ai = pi.applicationInfo;
@@ -85,9 +92,13 @@ public class AppsFragment extends Fragment {
                 size = new File(ai.sourceDir).length();
             } catch (Exception ignored) {}
             boolean system = (ai.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
-            allApps.add(new AppEntry(ai.packageName, label, pi.versionName, size, ai.sourceDir, system));
+            boolean enabled = ai.enabled;
+            allApps.add(new AppEntry(ai.packageName, label, pi.versionName, size, ai.sourceDir, system, enabled));
         }
-        Collections.sort(allApps, (a, b) -> a.label.compareToIgnoreCase(b.label));
+        Collections.sort(allApps, (a, b) -> {
+            if (a.system != b.system) return a.system ? 1 : -1;
+            return a.label.compareToIgnoreCase(b.label);
+        });
         filter("");
     }
 
@@ -103,16 +114,31 @@ public class AppsFragment extends Fragment {
 
     private void showActions(AppEntry entry) {
         PackageManager pm = requireContext().getPackageManager();
-        CharSequence[] actions = new CharSequence[]{"Open app", "Export APK to Downloads", "App info", "Uninstall"};
+        boolean isSystemApp = entry.system;
+
+        List<String> actions = new ArrayList<>();
+        actions.add("Open app");
+        actions.add("App info");
+        actions.add("Export APK");
+        if (!isSystemApp) actions.add("Uninstall");
+        if (!isSystemApp) actions.add("Force stop");
+        actions.add(entry.enabled ? "Disable app" : "Enable app");
+
+        CharSequence[] arr = actions.toArray(new CharSequence[0]);
         new AlertDialog.Builder(requireContext())
                 .setTitle(entry.label)
                 .setMessage(entry.pkg + "\nv" + entry.version + " · " + Util.humanSize(entry.size)
-                        + (entry.system ? "\nSystem app" : ""))
-                .setItems(actions, (d, which) -> {
-                    if (which == 0) launch(entry.pkg);
-                    else if (which == 1) exportApk(entry);
-                    else if (which == 2) openDetails(entry.pkg);
-                    else uninstall(entry.pkg);
+                        + (isSystemApp ? "\nSystem app" : "")
+                        + (entry.enabled ? "" : "\nDisabled"))
+                .setItems(arr, (d, which) -> {
+                    String action = arr[which].toString();
+                    if (action.equals("Open app")) launch(entry.pkg);
+                    else if (action.equals("App info")) openDetails(entry.pkg);
+                    else if (action.equals("Export APK")) exportApk(entry);
+                    else if (action.equals("Uninstall")) uninstall(entry.pkg);
+                    else if (action.equals("Force stop")) forceStop(entry.pkg);
+                    else if (action.equals("Disable app")) toggleEnabled(entry, false);
+                    else if (action.equals("Enable app")) toggleEnabled(entry, true);
                 })
                 .setNegativeButton("Close", null)
                 .show();
@@ -121,7 +147,7 @@ public class AppsFragment extends Fragment {
     private void launch(String pkg) {
         Intent intent = requireContext().getPackageManager().getLaunchIntentForPackage(pkg);
         if (intent == null) {
-            Toast.makeText(requireContext(), "This app cannot be launched directly", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "This app cannot be launched", Toast.LENGTH_SHORT).show();
             return;
         }
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -141,6 +167,38 @@ public class AppsFragment extends Fragment {
             startActivity(new Intent(Intent.ACTION_DELETE, Uri.parse("package:" + pkg)));
         } catch (ActivityNotFoundException e) {
             Toast.makeText(requireContext(), "Uninstaller unavailable", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void forceStop(String pkg) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                requireContext().getSystemService(android.app.ActivityManager.class).killBackgroundProcesses(pkg);
+            } else {
+                android.app.ActivityManager am = (android.app.ActivityManager) requireContext()
+                        .getSystemService(Context.ACTIVITY_SERVICE);
+                am.killBackgroundProcesses(pkg);
+            }
+            Toast.makeText(requireContext(), "Force stopped " + pkg, Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Force stop failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void toggleEnabled(AppEntry entry, boolean enable) {
+        try {
+            PackageManager pm = requireContext().getPackageManager();
+            pm.setApplicationEnabledSetting(entry.pkg,
+                    enable ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                            : PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0);
+            entry.enabled = enable;
+            Toast.makeText(requireContext(),
+                    enable ? entry.label + " enabled" : entry.label + " disabled",
+                    Toast.LENGTH_SHORT).show();
+            adapter.notifyDataSetChanged();
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Cannot " + (enable ? "enable" : "disable")
+                    + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -189,8 +247,7 @@ public class AppsFragment extends Fragment {
     }
 
     private void postToast(String message) {
-        new android.os.Handler(android.os.Looper.getMainLooper()).post(() ->
-                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show());
+        main.post(() -> Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show());
     }
 
     static class AppEntry {
@@ -200,14 +257,16 @@ public class AppsFragment extends Fragment {
         final long size;
         final String apkPath;
         final boolean system;
+        boolean enabled;
 
-        AppEntry(String pkg, String label, String version, long size, String apkPath, boolean system) {
+        AppEntry(String pkg, String label, String version, long size, String apkPath, boolean system, boolean enabled) {
             this.pkg = pkg;
             this.label = label;
             this.version = version == null ? "?" : version;
             this.size = size;
             this.apkPath = apkPath;
             this.system = system;
+            this.enabled = enabled;
         }
     }
 
@@ -234,7 +293,10 @@ public class AppsFragment extends Fragment {
         public void onBindViewHolder(@NonNull Holder h, int position) {
             AppEntry entry = items.get(position);
             h.name.setText(entry.label);
-            h.meta.setText(entry.pkg + " · v" + entry.version + " · " + Util.humanSize(entry.size));
+            String meta = entry.pkg + " · v" + entry.version + " · " + Util.humanSize(entry.size);
+            if (entry.system) meta += " · system";
+            h.meta.setText(meta);
+            h.itemView.setAlpha(entry.enabled ? 1.0f : 0.5f);
             try {
                 h.icon.setImageDrawable(pm.getApplicationIcon(entry.pkg));
             } catch (Exception e) {

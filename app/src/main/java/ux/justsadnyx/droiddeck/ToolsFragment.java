@@ -1,19 +1,11 @@
 package ux.justsadnyx.droiddeck;
 
-import android.app.ActivityManager;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.hardware.camera2.CameraCharacteristics;
-import android.hardware.camera2.CameraManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
-import android.os.VibratorManager;
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,18 +19,36 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.slider.Slider;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.os.VibratorManager;
 
 public class ToolsFragment extends Fragment {
 
     private TextView serverStatus;
+    private static boolean torchOn = false;
 
     @Nullable
     @Override
@@ -72,7 +82,7 @@ public class ToolsFragment extends Fragment {
         MaterialButton notifPerm = v.findViewById(R.id.t_notif_perm);
         MaterialButton clipBtn = v.findViewById(R.id.t_clip_clear);
         MaterialButton shareBtn = v.findViewById(R.id.t_share_report);
-        MaterialButton vibrateLong = v.findViewById(R.id.t_vibrate_long);
+        MaterialButton termsBtn = v.findViewById(R.id.t_open_terms);
 
         updateServerStatus();
         serverSwitch.setOnCheckedChangeListener((btn, checked) -> {
@@ -94,7 +104,6 @@ public class ToolsFragment extends Fragment {
 
         flashBtn.setOnClickListener(btn -> toggleTorch());
         vibrateBtn.setOnClickListener(btn -> vibrate(300));
-        vibrateLong.setOnClickListener(btn -> vibrate(2000));
         sosBtn.setOnClickListener(btn -> sosPattern());
 
         int currentBrightness = Settings.System.getInt(requireContext().getContentResolver(),
@@ -127,11 +136,11 @@ public class ToolsFragment extends Fragment {
         hashMd5.setOnClickListener(btn -> computeHash(hashInput.getText().toString(), "MD5", hashOut));
         hashSha.setOnClickListener(btn -> computeHash(hashInput.getText().toString(), "SHA-256", hashOut));
 
-        wifiBtn.setOnClickListener(btn -> openPanel(Settings.Panel.ACTION_WIFI, Settings.ACTION_WIFI_SETTINGS));
-        btBtn.setOnClickListener(btn -> open(null, Settings.ACTION_BLUETOOTH_SETTINGS));
-        displayBtn.setOnClickListener(btn -> open(null, Settings.ACTION_DISPLAY_SETTINGS));
-        batteryBtn.setOnClickListener(btn -> open(null, Settings.ACTION_BATTERY_SAVER_SETTINGS));
-        appsBtn.setOnClickListener(btn -> open(null, Settings.ACTION_APPLICATION_SETTINGS));
+        wifiBtn.setOnClickListener(btn -> openSettings(Settings.Panel.ACTION_WIFI, Settings.ACTION_WIFI_SETTINGS));
+        btBtn.setOnClickListener(btn -> openSettings(null, Settings.ACTION_BLUETOOTH_SETTINGS));
+        displayBtn.setOnClickListener(btn -> openSettings(null, Settings.ACTION_DISPLAY_SETTINGS));
+        batteryBtn.setOnClickListener(btn -> openSettings(null, Settings.ACTION_BATTERY_SAVER_SETTINGS));
+        appsBtn.setOnClickListener(btn -> openSettings(null, Settings.ACTION_APPLICATION_SETTINGS));
 
         notifPerm.setOnClickListener(btn -> {
             if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(requireContext(),
@@ -139,7 +148,7 @@ public class ToolsFragment extends Fragment {
                 ActivityCompat.requestPermissions(requireActivity(),
                         new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 43);
             } else {
-                Toast.makeText(requireContext(), "Notifications allowed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Notifications already allowed", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -152,6 +161,56 @@ public class ToolsFragment extends Fragment {
         });
 
         shareBtn.setOnClickListener(btn -> shareReport());
+
+        termsBtn.setOnClickListener(btn -> openTermsApp());
+    }
+
+    private void openTermsApp() {
+        String termsPkg = "ux.justsadnyx.droiddeck.terms";
+        try {
+            Intent intent = requireContext().getPackageManager().getLaunchIntentForPackage(termsPkg);
+            if (intent != null) {
+                startActivity(intent);
+                return;
+            }
+        } catch (Exception ignored) {}
+
+        new Thread(() -> {
+            try {
+                InputStream in = requireContext().getAssets().open("droiddeck-terms.apk");
+                File cacheDir = new File(requireContext().getCacheDir(), "terms_install");
+                cacheDir.mkdirs();
+                File apkFile = new File(cacheDir, "DroidDeckTerms.apk");
+                OutputStream out = new FileOutputStream(apkFile);
+                byte[] buf = new byte[65536];
+                int n;
+                while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+                out.close();
+                in.close();
+
+                Intent intent;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    Uri uri = FileProvider.getUriForFile(requireContext(),
+                            requireContext().getPackageName() + ".fileprovider", apkFile);
+                    intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(uri, "application/vnd.android.package-archive");
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                } else {
+                    intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(Uri.fromFile(apkFile),
+                            "application/vnd.android.package-archive");
+                }
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                    Toast.makeText(requireContext(), "Installing DroidDeck Terms...", Toast.LENGTH_SHORT).show();
+                    startActivity(intent);
+                });
+            } catch (Exception e) {
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(() ->
+                    Toast.makeText(requireContext(), "Could not install terms app: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show());
+            }
+        }).start();
     }
 
     private void shareReport() {
@@ -166,21 +225,15 @@ public class ToolsFragment extends Fragment {
         }
     }
 
-    private void openPanel(String panelAction, String fallback) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    private void openSettings(String panelAction, String fallback) {
+        if (panelAction != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             try {
                 startActivity(new Intent(panelAction));
                 return;
             } catch (Exception ignored) {}
         }
-        open(null, fallback);
-    }
-
-    private void open(String data, String action) {
         try {
-            Intent intent = new Intent(action);
-            if (data != null) intent.setData(Uri.parse(data));
-            startActivity(intent);
+            startActivity(new Intent(fallback));
         } catch (Exception e) {
             Toast.makeText(requireContext(), "Setting unavailable", Toast.LENGTH_SHORT).show();
         }
@@ -191,7 +244,7 @@ public class ToolsFragment extends Fragment {
         String ips = Util.localIpAddresses();
         if (running) {
             if (ips.equals("No local IP found")) {
-                serverStatus.setText("Running — connect to Wi-Fi, then browse to http://<phone-ip>:" + HttpServerService.PORT);
+                serverStatus.setText("Running — connect to Wi-Fi, then browse http://<phone-ip>:" + HttpServerService.PORT);
             } else {
                 String firstIp = ips.split("\n")[0].trim().split("\\s+")[0];
                 serverStatus.setText("Running — open on your PC:\nhttp://" + firstIp + ":" + HttpServerService.PORT
@@ -220,8 +273,6 @@ public class ToolsFragment extends Fragment {
             Toast.makeText(requireContext(), "Torch failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
-
-    private static boolean torchOn = false;
 
     private void vibrate(long ms) {
         Vibrator vibrator;
@@ -252,12 +303,7 @@ public class ToolsFragment extends Fragment {
             Toast.makeText(requireContext(), "No vibrator", Toast.LENGTH_SHORT).show();
             return;
         }
-        long[] pattern = {
-            0, 200, 100, 200, 100, 200,    // S: dot dot dot
-            200, 600, 100,                  // O: dash dash dash
-            600, 200, 100, 200, 100, 200,   // S: dot dot dot
-            200
-        };
+        long[] pattern = { 0, 200, 100, 200, 100, 200, 200, 600, 100, 600, 200, 100, 200, 100, 200, 200 };
         vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1));
         Toast.makeText(requireContext(), "SOS pattern", Toast.LENGTH_SHORT).show();
     }

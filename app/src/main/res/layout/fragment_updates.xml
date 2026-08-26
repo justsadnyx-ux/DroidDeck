@@ -55,5 +55,25 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <TextView style="@style/DeckToolLabel" android:text="Legal" />
+
+        <com.google.android.material.card.MaterialCardView style="@style/DeckCard">
+            <LinearLayout style="@style/DeckCardInner">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/u_terms"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Terms of Service" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/u_license"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="License (MIT)" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
     </LinearLayout>
 </ScrollView>

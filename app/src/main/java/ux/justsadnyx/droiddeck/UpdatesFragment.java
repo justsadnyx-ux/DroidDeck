@@ -1,34 +1,20 @@
 package ux.justsadnyx.droiddeck;
 
-import android.Manifest;
-import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.MediaStore;
-import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
@@ -78,6 +64,8 @@ public class UpdatesFragment extends Fragment {
         }
 
         MaterialButton releasesBtn = v.findViewById(R.id.u_releases);
+        MaterialButton termsBtn = v.findViewById(R.id.u_terms);
+        MaterialButton licenseBtn = v.findViewById(R.id.u_license);
 
         checkBtn.setOnClickListener(btn -> checkForUpdate(false));
         releasesBtn.setOnClickListener(btn -> {
@@ -88,6 +76,9 @@ public class UpdatesFragment extends Fragment {
                 Toast.makeText(requireContext(), "Cannot open browser", Toast.LENGTH_SHORT).show();
             }
         });
+
+        termsBtn.setOnClickListener(btn -> showTerms());
+        licenseBtn.setOnClickListener(btn -> showLicense());
 
         if (savedInstanceState != null) {
             pendingApkPath = savedInstanceState.getString("pending_apk");
@@ -109,6 +100,46 @@ public class UpdatesFragment extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (pendingApkPath != null) outState.putString("pending_apk", pendingApkPath);
+    }
+
+    private void showTerms() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Terms of Service")
+                .setMessage("DroidDeck — Terms of Service\n\n" +
+                        "Last updated: August 2026\n\n" +
+                        "1. ACCEPTANCE OF TERMS\n" +
+                        "By using DroidDeck, you agree to these terms. If you do not agree, do not use the app.\n\n" +
+                        "2. DESCRIPTION OF SERVICE\n" +
+                        "DroidDeck is a free, open-source Android toolkit. It provides device monitoring, file management, app management, network utilities, and system controls.\n\n" +
+                        "3. USE AT YOUR OWN RISK\n" +
+                        "DroidDeck is provided \"as is\" without warranty. You are responsible for your use of the app. The developers are not liable for any damage, data loss, or security issues.\n\n" +
+                        "4. PERMISSIONS\n" +
+                        "DroidDeck requests permissions to provide its features (storage access, camera for torch, notifications, etc.). We do not collect, transmit, or store any personal data.\n\n" +
+                        "5. OPEN SOURCE\n" +
+                        "DroidDeck is open source software. You may view, modify, and distribute the source code under the MIT License.\n\n" +
+                        "6. UPDATES\n" +
+                        "DroidDeck may check for updates via GitHub. No personal information is sent during this process.\n\n" +
+                        "7. THIRD-PARTY SERVICES\n" +
+                        "DroidDeck uses GitHub (api.github.com, github.com) for update checking and distribution. Their terms apply when you interact with their services.\n\n" +
+                        "8. TERMINATION\n" +
+                        "You may stop using DroidDeck at any time. Uninstalling the app removes all local data.\n\n" +
+                        "9. CHANGES TO TERMS\n" +
+                        "These terms may be updated. Continued use constitutes acceptance of any changes.\n\n" +
+                        "10. CONTACT\n" +
+                        "Report issues at https://github.com/justsadnyx-ux/DroidDeck/issues")
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+    private void showLicense() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("MIT License")
+                .setMessage("MIT License\n\nCopyright (c) 2026 justsadnyx\n\n" +
+                        "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\n" +
+                        "The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\n" +
+                        "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.")
+                .setPositiveButton("OK", null)
+                .show();
     }
 
     private void checkForUpdate(boolean silent) {
@@ -141,7 +172,6 @@ public class UpdatesFragment extends Fragment {
 
                 String apkUrl = findApkUrl(json);
                 if (apkUrl == null) throw new Exception("Release has no APK");
-
                 downloadAndInstall(apkUrl, version);
 
             } catch (Exception e) {
@@ -199,7 +229,7 @@ public class UpdatesFragment extends Fragment {
                 if (!requireContext().getPackageManager().canRequestPackageInstalls()) {
                     pendingApkPath = apkFile.getAbsolutePath();
                     Toast.makeText(requireContext(), "Allow installs from this source first.", Toast.LENGTH_LONG).show();
-                    startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                    startActivity(new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
                             Uri.parse("package:" + requireContext().getPackageName())));
                     return;
                 }
