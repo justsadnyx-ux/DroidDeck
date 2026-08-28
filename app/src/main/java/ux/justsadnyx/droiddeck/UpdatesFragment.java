@@ -341,17 +341,23 @@ public class UpdatesFragment extends Fragment {
     private String findApkUrl(String json) {
         int searchFrom = 0;
         while (true) {
-            int nameIdx = json.indexOf("\"name\"", searchFrom);
+            // Match the exact pattern "name":"<filename>.apk"
+            int nameIdx = json.indexOf("\"name\":\"", searchFrom);
             if (nameIdx < 0) break;
-            String name = extractBetween(json.substring(nameIdx), "\"", "\"");
-            if (name != null && name.endsWith(".apk")) {
-                int dlIdx = json.indexOf("\"browser_download_url\"", nameIdx);
-                if (dlIdx >= 0) {
-                    String url = extractBetween(json.substring(dlIdx), "\"browser_download_url\":\"", "\"");
-                    if (url != null) return url;
-                }
+            nameIdx += 8; // skip past "name":"
+            int nameEnd = json.indexOf('"', nameIdx);
+            if (nameEnd < 0) return null;
+            String fileName = json.substring(nameIdx, nameEnd);
+            if (fileName.endsWith(".apk")) {
+                // Find this asset's browser_download_url (appears after its name)
+                int dlIdx = json.indexOf("\"browser_download_url\":\"", nameEnd);
+                if (dlIdx < 0) return null;
+                dlIdx += "\"browser_download_url\":\"".length();
+                int dlEnd = json.indexOf('"', dlIdx);
+                if (dlEnd < 0) return null;
+                return json.substring(dlIdx, dlEnd);
             }
-            searchFrom = nameIdx + 6;
+            searchFrom = nameEnd;
         }
         return null;
     }
