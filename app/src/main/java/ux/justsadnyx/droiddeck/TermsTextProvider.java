@@ -1,60 +1,8 @@
-package ux.justsadnyx.droiddeck.terms;
+package ux.justsadnyx.droiddeck;
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Bundle;
-import android.widget.TextView;
+public class TermsTextProvider {
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.widget.NestedScrollView;
-
-public class TermsActivity extends AppCompatActivity {
-
-    public static final String ACTION_SHOW_TERMS = "ux.justsadnyx.droiddeck.terms.SHOW_TERMS";
-    public static final String DROIDDECK_PACKAGE = "ux.justsadnyx.droiddeck";
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_terms);
-
-        TextView tv = findViewById(R.id.terms_text);
-        tv.setText(getTermsText());
-
-        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v -> finish());
-        toolbar.setNavigationIcon(R.drawable.ic_terms_close);
-        toolbar.setOnMenuItemClickListener(null);
-
-        refreshDroidDeckLink();
-    }
-
-    private void refreshDroidDeckLink() {
-        if (isDroidDeckInstalled()) {
-            // DroidDeck is installed: allow going back / it will be relaunched from there
-        }
-    }
-
-    private boolean isDroidDeckInstalled() {
-        try {
-            getPackageManager().getPackageInfo(DROIDDECK_PACKAGE, 0);
-            return true;
-        } catch (PackageManager.NameNotFoundException e) {
-            return false;
-        }
-    }
-
-    private void showInfo(String title, String msg) {
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(msg)
-                .setPositiveButton("OK", null)
-                .show();
-    }
-
-    private String getTermsText() {
+    public static String getFullText() {
         StringBuilder sb = new StringBuilder();
         sb.append("DroidDeck \u2014 Terms of Service & License\n\n");
         sb.append("Last updated: August 2026\nVersion: 1.1\n\n");
@@ -126,7 +74,7 @@ public class TermsActivity extends AppCompatActivity {
         return sb.toString();
     }
 
-    private String divider() {
+    private static String divider() {
         return "═══════════════════════════════════════";
     }
 }

@@ -37,6 +37,7 @@ public class UpdatesFragment extends Fragment {
     private ProgressBar dlBar;
     private MaterialButton checkBtn;
     private String pendingApkPath;
+    private boolean autoChecked = false;
     private final ExecutorService exec = Executors.newSingleThreadExecutor();
     private final Handler main = new Handler(Looper.getMainLooper());
 
@@ -77,11 +78,17 @@ public class UpdatesFragment extends Fragment {
             }
         });
 
-        termsBtn.setOnClickListener(btn -> showTerms());
+        termsBtn.setOnClickListener(btn -> openConnectedTerms());
         licenseBtn.setOnClickListener(btn -> showLicense());
 
         if (savedInstanceState != null) {
             pendingApkPath = savedInstanceState.getString("pending_apk");
+        }
+
+        // Auto-check for updates the first time this tab is opened.
+        if (!autoChecked) {
+            autoChecked = true;
+            checkBtn.post(this::checkForUpdate);
         }
     }
 
@@ -100,6 +107,36 @@ public class UpdatesFragment extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (pendingApkPath != null) outState.putString("pending_apk", pendingApkPath);
+    }
+
+    private void openConnectedTerms() {
+        String termsPkg = "ux.justsadnyx.droiddeck.terms";
+        if (isPackageInstalled(termsPkg)) {
+            try {
+                Intent intent = new Intent("ux.justsadnyx.droiddeck.terms.SHOW_TERMS");
+                intent.setPackage(termsPkg);
+                if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
+                    startActivity(intent);
+                    return;
+                }
+                Intent launch = requireContext().getPackageManager().getLaunchIntentForPackage(termsPkg);
+                if (launch != null) {
+                    startActivity(launch);
+                    return;
+                }
+            } catch (Exception ignored) {}
+        }
+        // Fallback: show inline terms if companion not installed
+        showTerms();
+    }
+
+    private boolean isPackageInstalled(String pkg) {
+        try {
+            requireContext().getPackageManager().getPackageInfo(pkg, 0);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private void showTerms() {

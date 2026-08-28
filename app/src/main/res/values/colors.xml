@@ -2,12 +2,19 @@
 <resources>
     <color name="violet">#6C5CE7</color>
     <color name="violet_light">#A29BFE</color>
+    <color name="violet_dark">#4A3AA8</color>
     <color name="cyan">#00B894</color>
+    <color name="cyan_light">#6BE3C6</color>
     <color name="bg">#121212</color>
+    <color name="bg_gradient_start">#1A142E</color>
+    <color name="bg_gradient_end">#0F0F12</color>
     <color name="surface">#1E1E1E</color>
     <color name="surface_2">#2A2A2A</color>
+    <color name="surface_3">#242434</color>
     <color name="text_primary">#F0F0F0</color>
     <color name="text_secondary">#B0B0B0</color>
     <color name="text_faint">#707070</color>
     <color name="outline">#333333</color>
+    <color name="card_border">#3A3A52</color>
+    <color name="accent_glow">#7C6CF5</color>
 </resources>

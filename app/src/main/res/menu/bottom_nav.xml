@@ -17,6 +17,10 @@
         android:icon="@drawable/ic_tools"
         android:title="@string/nav_tools" />
     <item
+        android:id="@+id/nav_terminal"
+        android:icon="@drawable/ic_terminal"
+        android:title="@string/nav_terminal" />
+    <item
         android:id="@+id/nav_updates"
         android:icon="@drawable/ic_updates"
         android:title="@string/nav_updates" />

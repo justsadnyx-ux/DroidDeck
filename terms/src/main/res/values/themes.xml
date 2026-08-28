@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="terms_violet">#6C5CE7</color>
+    <color name="terms_violet_light">#A29BFE</color>
+    <color name="terms_cyan">#00B894</color>
+    <color name="terms_bg">#121212</color>
+    <color name="terms_surface">#1E1E1E</color>
+    <color name="terms_text">#F0F0F0</color>
+    <color name="terms_text_secondary">#B0B0B0</color>
+
+    <style name="Theme.Terms" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/terms_violet</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">@color/terms_violet_light</item>
+        <item name="colorSecondary">@color/terms_cyan</item>
+        <item name="android:colorBackground">@color/terms_bg</item>
+        <item name="colorSurface">@color/terms_surface</item>
+        <item name="android:statusBarColor">@color/terms_bg</item>
+        <item name="android:navigationBarColor">@color/terms_bg</item>
+        <item name="colorOnSurface">@color/terms_text</item>
+    </style>
+</resources>

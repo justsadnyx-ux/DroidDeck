@@ -36,6 +36,17 @@
             android:theme="@style/Theme.DroidDeck" />
 
         <activity
+            android:name=".TermsSetupActivity"
+            android:exported="false"
+            android:theme="@style/Theme.DroidDeck" />
+
+        <activity
+            android:name=".TerminalActivity"
+            android:exported="false"
+            android:theme="@style/Theme.DroidDeck"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

@@ -30,6 +30,13 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        // Mandatory terms gate: require acceptance before entering the app.
+        if (!Prefs.areTermsAccepted(this)) {
+            startActivity(new Intent(this, TermsSetupActivity.class));
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_main);
 
         UpdateChecker.schedule(this);
@@ -52,6 +59,11 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView nav = findViewById(R.id.bottom_nav);
         nav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
+            if (id == R.id.nav_terminal) {
+                startActivity(new Intent(this, TerminalActivity.class));
+                // Keep current fragment visible; return to it when terminal closes
+                return true;
+            }
             Fragment target;
             if (id == R.id.nav_dashboard) target = dashboardFragment;
             else if (id == R.id.nav_files) target = filesFragment;

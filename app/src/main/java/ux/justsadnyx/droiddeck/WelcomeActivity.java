@@ -95,7 +95,8 @@ public class WelcomeActivity extends AppCompatActivity {
 
     private void finishOnboarding() {
         Prefs.setOnboardingDone(this);
-        startActivity(new Intent(this, MainActivity.class));
+        // Go straight to the mandatory Terms agreement + companion app setup.
+        startActivity(new Intent(this, TermsSetupActivity.class));
         finish();
     }
 }

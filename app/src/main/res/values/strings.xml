@@ -4,6 +4,7 @@
     <string name="nav_files">Files</string>
     <string name="nav_apps">Apps</string>
     <string name="nav_tools">Tools</string>
+    <string name="nav_terminal">Terminal</string>
     <string name="nav_updates">Update</string>
     <string name="device">Device</string>
     <string name="memory">Memory</string>
@@ -21,4 +22,17 @@
     <string name="search_apps">Search apps…</string>
     <string name="new_folder">New folder</string>
     <string name="grant_notif">Allow notifications</string>
+    <string name="welcome_terms_title">Please review the Terms</string>
+    <string name="welcome_terms_subtitle">DroidDeck bundles a companion Terms &amp; License app. Review the terms below, then accept to set up the companion app automatically.</string>
+    <string name="accept_install">Accept &amp; Install</string>
+    <string name="open_standalone_terms">Open download instructions</string>
+    <string name="decline_exit">Decline &amp; Exit</string>
+    <string name="terminal_hint">Enter a command, e.g. ls -la /sdcard</string>
+    <string name="terminal_run">Run</string>
+    <string name="terminal_clear">Clear</string>
+    <string name="terminal_title">Terminal</string>
+    <string name="terminal_note">Non-root shell on this device. Some commands may require root.</string>
+    <string name="terms_installing">Installing companion app…</string>
+    <string name="terms_install_need_perm">Please allow installs from this source, then retry.</string>
+    <string name="terms_setup_subtitle_accept">Review the bundled terms to continue.</string>
 </resources>

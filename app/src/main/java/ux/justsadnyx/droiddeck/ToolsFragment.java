@@ -183,13 +183,23 @@ public class ToolsFragment extends Fragment {
     private void openTermsApp() {
         String termsPkg = "ux.justsadnyx.droiddeck.terms";
 
-        try {
-            Intent launchIntent = requireContext().getPackageManager().getLaunchIntentForPackage(termsPkg);
-            if (launchIntent != null) {
-                startActivity(launchIntent);
-                return;
-            }
-        } catch (Exception ignored) {}
+        // Launch the connected standalone Terms app via explicit custom action.
+        if (isPackageInstalled(termsPkg)) {
+            try {
+                Intent intent = new Intent("ux.justsadnyx.droiddeck.terms.SHOW_TERMS");
+                intent.setPackage(termsPkg);
+                if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
+                    startActivity(intent);
+                    return;
+                }
+                // fallback to launcher intent
+                Intent launch = requireContext().getPackageManager().getLaunchIntentForPackage(termsPkg);
+                if (launch != null) {
+                    startActivity(launch);
+                    return;
+                }
+            } catch (Exception ignored) {}
+        }
 
         Toast.makeText(requireContext(), "Installing Terms app...", Toast.LENGTH_SHORT).show();
         exec.execute(() -> {
@@ -235,6 +245,15 @@ public class ToolsFragment extends Fragment {
                         "Could not extract terms APK: " + e.getMessage(), Toast.LENGTH_LONG).show());
             }
         });
+    }
+
+    private boolean isPackageInstalled(String pkg) {
+        try {
+            requireContext().getPackageManager().getPackageInfo(pkg, 0);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private void dnsLookup(String host, TextView output) {
