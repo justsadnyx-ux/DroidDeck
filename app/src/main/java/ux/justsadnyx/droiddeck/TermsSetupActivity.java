@@ -120,8 +120,9 @@ public class TermsSetupActivity extends AppCompatActivity {
             return;
         }
 
-        // Ensure unknown-source permission on Android 8+
-        if (!getPackageManager().canRequestPackageInstalls()) {
+        // Ensure unknown-source permission on Android 8+ (silently supported on older APIs)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && !getPackageManager().canRequestPackageInstalls()) {
             progress.setVisibility(View.VISIBLE);
             progress.setText(R.string.terms_install_need_perm);
             installing = false;
@@ -150,7 +151,8 @@ public class TermsSetupActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancel", null)
                 .setOnDismissListener(d -> {
-                    if (!getPackageManager().canRequestPackageInstalls()) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                            && !getPackageManager().canRequestPackageInstalls()) {
                         toast("Install source not enabled. Terms companion must be installed.");
                     }
                 })
@@ -161,7 +163,8 @@ public class TermsSetupActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQ_INSTALL_PERM) {
-            if (getPackageManager().canRequestPackageInstalls()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                    && getPackageManager().canRequestPackageInstalls()) {
                 doBackgroundInstall();
             } else {
                 installing = false;
@@ -261,6 +264,7 @@ public class TermsSetupActivity extends AppCompatActivity {
     }
 
     @Override
+    @android.annotation.SuppressLint("MissingSuperCall")
     public void onBackPressed() {
         // Blocks back so terms must be accepted
         onDecline();

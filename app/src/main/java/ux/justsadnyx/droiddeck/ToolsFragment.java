@@ -348,7 +348,11 @@ public class ToolsFragment extends Fragment {
             Toast.makeText(requireContext(), "No vibrator", Toast.LENGTH_SHORT).show();
             return;
         }
-        vibrator.vibrate(VibrationEffect.createOneShot(ms, VibrationEffect.DEFAULT_AMPLITUDE));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(ms, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            vibrator.vibrate(ms);
+        }
     }
 
     private void sosPattern() {
@@ -365,7 +369,11 @@ public class ToolsFragment extends Fragment {
             return;
         }
         long[] pattern = { 0, 200, 100, 200, 100, 200, 200, 600, 100, 600, 200, 100, 200, 100, 200, 200 };
-        vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1));
+        } else {
+            vibrator.vibrate(pattern, -1);
+        }
         Toast.makeText(requireContext(), "SOS pattern", Toast.LENGTH_SHORT).show();
     }
 

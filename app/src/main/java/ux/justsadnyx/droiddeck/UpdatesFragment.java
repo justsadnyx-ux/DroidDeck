@@ -2,6 +2,7 @@ package ux.justsadnyx.droiddeck;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -96,7 +97,8 @@ public class UpdatesFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if (pendingApkPath != null && getContext() != null
-                && getContext().getPackageManager().canRequestPackageInstalls()) {
+                && (Build.VERSION.SDK_INT < Build.VERSION_CODES.O
+                    || getContext().getPackageManager().canRequestPackageInstalls())) {
             String path = pendingApkPath;
             pendingApkPath = null;
             promptInstall(path);
@@ -278,7 +280,8 @@ public class UpdatesFragment extends Fragment {
                 status.setText("Downloaded v" + fv + ". Tap to install.");
                 dlBar.setVisibility(View.GONE);
 
-                if (!requireContext().getPackageManager().canRequestPackageInstalls()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                        && !requireContext().getPackageManager().canRequestPackageInstalls()) {
                     pendingApkPath = apkFile.getAbsolutePath();
                     Toast.makeText(requireContext(), "Allow installs from this source first.", Toast.LENGTH_LONG).show();
                     try {
